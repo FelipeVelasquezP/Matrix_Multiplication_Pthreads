@@ -29,9 +29,7 @@
 /*  @breif main(): Main function
 */
 int main(int argc, char* argv[]){
-    /*Variables*/
-    //int N, Nthreads;
-    //double **Ma, **Mb,**Mc;
+
 
     struct arg_struct { 
      int N;
@@ -39,7 +37,7 @@ int main(int argc, char* argv[]){
      double **Ma;
      double **Mb;
      double **Mc;
-     int *idThread;
+     int idThread;
     };
 
      struct arg_struct args;
@@ -67,11 +65,6 @@ int main(int argc, char* argv[]){
     }
     sampleStart();
     for (int i = 0; i < args.Nthreads; ++i){
-        int *idThread;
-        //idThread=(int *)malloc(sizeof(int));
-       // printf("A\n");
-        //*idThread=i;
-        //printf("AA\n");
         args.idThread=i;
         pthread_create(&threads[i],NULL,&multMM,(void *)&args);
     }

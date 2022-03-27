@@ -181,7 +181,7 @@ void initMatrix_DoublePointers (double **MA, double **MB, double **MC, int size)
  * @param arg that has the thread id
  */
 void *multMM(void *arg){
-	int i,j,k,idTh;
+	int i,j,k;
 	int portionSize, initRow, endRow;
 	double sum;
 
@@ -195,8 +195,6 @@ void *multMM(void *arg){
     };
 
 	struct arg_struct *args = arg;
-	//printf("%d\n", args -> idThread);
-	//idTh=*(int *) arg; //Void pointer to integer 
 	portionSize=args -> N/args -> Nthreads; //It is determined the portion of matrix A to send to each thread
 	initRow=(args -> idThread)*portionSize; //It is passed the beggining of the row 
 	endRow=((args -> idThread)+1)*portionSize; //It is passed the end of the row
