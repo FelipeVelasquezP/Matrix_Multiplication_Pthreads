@@ -16,5 +16,5 @@ A continuación se presenta la manera en la que se ejecutan los scripts correspo
 3. Ejecutar el programa, los argumentos corresponden a la cantidad de hilos y el tamaño de la matriz (NxN)
 
     ```bash
-    user@user:~$ -/MMPosix <matrix size> <number of threads>
+    user@user:~$ ./MMPosix <matrix size> <number of threads>
     ```
