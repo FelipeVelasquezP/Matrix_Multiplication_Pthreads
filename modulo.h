@@ -1,5 +1,5 @@
-/*Fecha: 26/03/2022
-* Autor: Luis Felipe Velasquez Puentes
+/*Fecha: 08/02/2022
+* Autor: Andres C. Lopez R.
 * Subject: Parallel and Distributed Computing.
 * Topic: Construction of the first Benchmark
 * Description: Application that allows evaluating the performance
@@ -21,5 +21,5 @@ void matrixMultiplyMM1f(int size, double *Ma, double *Mb, double *Mr);
 double ** memReserve (int size);
 void initMatrix_DoublePointers (double **MA, double **MB, double **MC, int size);
 void printMatrix_DoublePointers (double **M, int size);
-
+//void *multMM(void *arg);
 #endif
