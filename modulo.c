@@ -171,6 +171,46 @@ void initMatrix_DoublePointers (double **MA, double **MB, double **MC, int size)
 	}
 }
 
+
+/**
+ * @brief Function that will be sent to each thread, that makes the matrix multiplication.
+ * The matrix A divides in slices, in function with the dimension and the number of threads that requires the 
+ * user.
+ * 
+ * Note: the function will be void, and this returns a potential warning. Think in it to improve it
+ * @param arg that has the thread id
+ */
+void *multMM(void *arg){
+	int i,j,k,idTh;
+	int portionSize, initRow, endRow;
+	double sum;
+
+	struct arg_struct { 
+     int N;
+     int Nthreads;
+     double **Ma;
+     double **Mb;
+     double **Mc;
+     int idThread;
+    };
+
+	struct arg_struct *args = arg;
+	//printf("%d\n", args -> idThread);
+	//idTh=*(int *) arg; //Void pointer to integer 
+	portionSize=args -> N/args -> Nthreads; //It is determined the portion of matrix A to send to each thread
+	initRow=(args -> idThread)*portionSize; //It is passed the beggining of the row 
+	endRow=((args -> idThread)+1)*portionSize; //It is passed the end of the row
+	for (i = initRow; i < endRow; i++){
+		for (j = 0; j < args -> N; ++j){
+			sum=0;
+			for ( k = 0; k < args -> N; k++){
+				sum+=args -> Ma[i][k]*args -> Mb[k][j];
+			}
+			args -> Mc[i][j]=sum;
+		}
+	}
+}
+
 void printMatrix_DoublePointers (double **M, int size){
 	int i, j; /*Indices*/
 	for (i = 0; i < size; ++i)	{

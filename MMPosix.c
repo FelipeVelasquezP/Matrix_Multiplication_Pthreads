@@ -26,77 +26,63 @@
 #include <pthread.h>
 #include <sys/time.h>
 
-/*Global variables*/
-int N, Nthreads;
-double **Ma, **Mb, **Mc;
-
-/**
- * @brief Function that will be sent to each thread, that makes the matrix multiplication.
- * The matrix A divides in slices, in function with the dimension and the number of threads that requires the 
- * user.
- * 
- * Note: the function will be void, and this returns a potential warning. Think in it to improve it
- * @param arg that has the thread id
- */
-void *multMM(void *arg){
-	int i,j,k,idTh;
-	int portionSize, initRow, endRow;
-	double sum;
-	idTh=*(int *) arg; //Void pointer to integer 
-	portionSize=N/Nthreads; //It is determined the portion of matrix A to send to each thread
-	initRow=idTh*portionSize; //It is passed the beggining of the row 
-	endRow=(idTh+1)*portionSize; //It is passed the end of the row
-	for (i = initRow; i < endRow; i++){
-		for (j = 0; j < N; ++j){
-			sum=0;
-			for ( k = 0; k < N; k++){
-				sum+=Ma[i][k]*Mb[k][j];
-			}
-			Mc[i][j]=sum;
-		}
-	}
-}
-
 /*  @breif main(): Main function
 */
 int main(int argc, char* argv[]){
+    /*Variables*/
+    //int N, Nthreads;
+    //double **Ma, **Mb,**Mc;
+
+    struct arg_struct { 
+     int N;
+     int Nthreads;
+     double **Ma;
+     double **Mb;
+     double **Mc;
+     int *idThread;
+    };
+
+     struct arg_struct args;
+
     if (argc!=3){
         printf("./MMPosix <matrix size> <# of threads>\n");
         return -1;
     }
 
     /*Init of global variables*/
-    N           = atof(argv[1]);    /* Matrix's size.*/
-    Nthreads    = atof(argv[2]);    /* Number of threads.*/
+    args.N           = atof(argv[1]);    /* Matrix's size.*/
+    args.Nthreads    = atof(argv[2]);    /* Number of threads.*/
     
-    pthread_t *threads=(pthread_t*)malloc(N*sizeof(pthread_t));//Thread reservation
+    pthread_t *threads=(pthread_t*)malloc(args.N*sizeof(pthread_t));//Thread reservation
     /*Memory creation and reserce for each matrix*/
-    Ma = memReserve(N); 
-    Mb = memReserve(N);
-    Mc = memReserve(N);
-    initMatrix_DoublePointers (Ma, Mb, Mc, N);
-    if (N<4){
+    args.Ma = memReserve(args.N); 
+    args.Mb = memReserve(args.N);
+    args.Mc = memReserve(args.N);
+    initMatrix_DoublePointers (args.Ma, args.Mb, args.Mc, args.N);
+    if (args.N<4){
         printf("Matriz A\n");
-        printMatrix_DoublePointers (Ma, N);
+        printMatrix_DoublePointers (args.Ma, args.N);
         printf("Matriz B\n");
-        printMatrix_DoublePointers (Mb, N);
+        printMatrix_DoublePointers (args.Mb, args.N);
     }
     sampleStart();
-    for (int i = 0; i < Nthreads; ++i){
+    for (int i = 0; i < args.Nthreads; ++i){
         int *idThread;
-        idThread=(int *)malloc(sizeof(int));
-        *idThread=i;
-        pthread_create(&threads[i],NULL,multMM,(void *)idThread);
+        //idThread=(int *)malloc(sizeof(int));
+       // printf("A\n");
+        //*idThread=i;
+        //printf("AA\n");
+        args.idThread=i;
+        pthread_create(&threads[i],NULL,&multMM,(void *)&args);
     }
-    for (int i = 0; i < Nthreads; ++i){
-        
+    for (int i = 0; i < args.Nthreads; ++i){
         pthread_join(threads[i],NULL);
     }
     sampleEnd();
     free(threads);
-    if (N<4){
+    if (args.N<4){
         printf("Matriz C\n");
-        printMatrix_DoublePointers (Mc, N);
+        printMatrix_DoublePointers (args.Mc, args.N);
     }
 
     return 0;
