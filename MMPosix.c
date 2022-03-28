@@ -31,14 +31,6 @@
 int main(int argc, char* argv[]){
 
 
-    struct arg_struct { 
-     int N;
-     int Nthreads;
-     double **Ma;
-     double **Mb;
-     double **Mc;
-     int idThread;
-    };
 
      struct arg_struct args;
 
