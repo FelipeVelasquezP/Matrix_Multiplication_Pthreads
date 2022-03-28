@@ -1,5 +1,5 @@
 /*Fecha: 08/02/2022
-* Autor: Andres C. Lopez R.
+* Autor: Luis Felipe Velasquez Puentes
 * Subject: Parallel and Distributed Computing.
 * Topic: Construction of the first Benchmark
 * Description: Application that allows evaluating the performance
@@ -10,6 +10,14 @@
 #ifndef MODULO_C_H_INCLUDE
 #define MODULO_C_H_INCLUDE
 
+struct arg_struct { 
+     int N;
+     int Nthreads;
+     double **Ma;
+     double **Mb;
+     double **Mc;
+     int idThread;
+    };
 
 void sampleStart();
 void sampleEnd();
