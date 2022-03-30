@@ -1,6 +1,6 @@
 GCC = gcc-9
 FLAGS = -pedantic -Wall
-CFLAGS = -lm -lpthread
+CFLAGS = -lm -lpthread -fopenmp
 
 PROGS: MM1c MM1f MMPosix
 

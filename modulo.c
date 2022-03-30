@@ -61,8 +61,8 @@ void initMatrix(int SZ, double *Ma, double *Mb, double *Mr){
 	int i, j;
 	for(i=0; i<SZ; ++i){
 		for(j=0;j<SZ;++j){
-			Ma[j+i*SZ] = 3.0*(i-j);
-			Mb[j+i*SZ] = 2.8*(j+i);
+			Ma[j+i*SZ] = 3.2*(i+j);
+			Mb[j+i*SZ] = 2.4*(j-i);
 			Mr[j+i*SZ] = 0.0;
 		}
 	}
@@ -75,16 +75,17 @@ void initMatrix(int SZ, double *Ma, double *Mb, double *Mr){
 */
 void printMatrix(int SZ, double *M){
 	int i,j;
-	for (i=0;i<SZ; ++i){
-		for (j=0;j<SZ; ++j){
-			printf("  %f  ",M[j+i*SZ]);
+	if(SZ < 5){
+		for (i=0;i<SZ; ++i){
+			for (j=0;j<SZ; ++j){
+				printf("  %f  ",M[j+i*SZ]);
+			}
+			printf("\n");
 		}
-		printf("\n");
-	}
-		printf("----------------------------");
-		printf("\n");
-		
-		
+			printf("----------------------------");
+			printf("\n");
+			
+	}	
 }
 
 /*	@brief: Multiply matrices
@@ -94,7 +95,7 @@ void printMatrix(int SZ, double *M){
 	@param c: Total matrix of multiplication
     ---
 */
-void matrixMultiplyMM1c(int size, double *Ma, double *Mb, double *Mr){
+void MM1c(int size, double *Ma, double *Mb, double *Mr){
 	int i, j;
 	for(i=0; i<size; ++i){
 		for(j=0; j<size; ++j){
@@ -111,7 +112,7 @@ void matrixMultiplyMM1c(int size, double *Ma, double *Mb, double *Mr){
 	}
 }
 
-void matrixMultiplyMM1f(int size, double *Ma, double *Mb, double *Mr){
+void MM1f(int size, double *Ma, double *Mb, double *Mr){
   int i, j;
 	for(i=0; i<size; ++i){
 		for(j=0; j<size; ++j){
@@ -181,23 +182,36 @@ void initMatrix_DoublePointers (double **MA, double **MB, double **MC, int size)
  * @param arg that has the thread id
  */
 void *multMM(void *arg){
+	/*Argument assignment to struct*/
+	struct arg_struct *args = arg;
+	int idThread = args->iDThread;
+	double **Ma = args->Ma;
+	double **Mb = args->Mb;
+	double **Mc = args->Mc;
+	int N = args->n;
+	int Nthreads = args->NThreads;
+	
+	/*Variables*/
 	int i,j,k;
 	int portionSize, initRow, endRow;
 	double sum;
 
-	struct arg_struct *args = arg;
-	portionSize=args -> N/args -> Nthreads; //It is determined the portion of matrix A to send to each thread
-	initRow=(args -> idThread)*portionSize; //It is passed the beggining of the row 
-	endRow=((args -> idThread)+1)*portionSize; //It is passed the end of the row
+	//It is determined the portion of matrix A to send to each thread
+	portionSize=N/Nthreads; 
+	//It is passed the beggining of the row 
+	initRow=(idThread)*portionSize; 
+	//It is passed the end of the row
+	endRow=((idThread)+1)*portionSize; 
 	for (i = initRow; i < endRow; i++){
-		for (j = 0; j < args -> N; ++j){
+		for (j = 0; j < N; ++j){
 			sum=0;
-			for ( k = 0; k < args -> N; k++){
-				sum+=args -> Ma[i][k]*args -> Mb[k][j];
+			for ( k = 0; k < N; k++){
+				sum+=Ma[i][k]*Mb[k][j];
 			}
-			args -> Mc[i][j]=sum;
+			Mc[i][j]=sum;
 		}
 	}
+	//pthread_exit(NULL);
 	return NULL;
 }
 
