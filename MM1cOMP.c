@@ -17,6 +17,7 @@
     6.  Print matrix with double pointer.
 */
 
+
 /*Interfaces*/
 #include "modulo.h"
 #include <stdio.h>
@@ -26,12 +27,18 @@
 #include <sys/time.h>
 #include <omp.h>
 
+/*Varaible of high value to reserve memory*/
+#define DATA_SZ (1024*1024*64*4)
+
+/*Memory space acordin reserve memory value*/
+static double MEM_CHUNK[DATA_SZ];
+
 
 /*  @breif main(): Main function
 */
 int main(int argc, char* argv[]){
 
-    double **Ma,**Mb,**Mc;
+    double *Ma,*Mb,*Mc;
     //struct arg_struct args;
 
     if (argc!=3){
@@ -51,53 +58,24 @@ int main(int argc, char* argv[]){
 	}
 
 
-    /*The thread array is created*/
-	pthread_t *hilosExec;
-	/*Memory reservation for threads*/
-	hilosExec = (pthread_t *)malloc(nthreads*sizeof(pthread_t));
-	
-	/*argument vector is created to be passed to the threads*/
-	struct arg_struct argThreads[nthreads];
-
     /*Memory creation and reserce for each matrix*/
-    Ma = memReserve(N); 
-    Mb = memReserve(N);
-    Mc = memReserve(N);
-    initMatrix_DoublePointers (Ma, Mb, Mc, N);
+    Ma = MEM_CHUNK;
+    Mb = Ma+N*N;
+    Mc = Mb+N*N;
+    initMatrix(N,Ma, Mb, Mc);
 
-    /*Matrices are printed if N is less than 4*/
-    if (N<4){
-        printf("Matriz A\n");
-        printMatrix_DoublePointers (Ma, N);
-        printf("Matriz B\n");
-        printMatrix_DoublePointers (Mb, N);
-    }
+    /*Matrices are printed*/    
+    printMatrix(N,Ma);
+    printMatrix(N,Mb);
+    
+
     sampleStart();
-
-    /*Thread creation process*/
-    for (int i = 0; i < nthreads; ++i){
-        /*Argument assignment to struct*/
-        argThreads[i].iDThread = i;
-		argThreads[i].n = N;
-		argThreads[i].NThreads = nthreads;
-		argThreads[i].Ma = Ma;
-		argThreads[i].Mb = Mb;
-		argThreads[i].Mc = Mc;
-        /*creation of thread*/
-        pthread_create(&hilosExec[i],NULL,&multMM,(void *)&argThreads[i]);
-    }
-    /*function waits for the thread specified by thread to terminate*/
-    for (int i = 0; i < nthreads; ++i){
-        pthread_join(hilosExec[i],NULL);
-    }
+    MM1cOMP(nthreads,N,Ma,Mb,Mc);
     sampleEnd();
-    free(hilosExec);
     
     /*Matrices are printed if N is less than 4*/
-    if (N<4){
-        printf("Matriz C\n");
-        printMatrix_DoublePointers (Mc, N);
-    }
+    printMatrix(N,Mc);
+    
 
-    return 0;
+    return EXIT_SUCCESS;
 }

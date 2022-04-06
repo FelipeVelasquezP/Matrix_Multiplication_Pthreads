@@ -17,6 +17,8 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <omp.h>
+#include <pthread.h>
 
 
 /*CONSTANTS*/
@@ -57,13 +59,13 @@ double randNumber(){
 	@param SZ: Size of the matrix
 
 */
-void initMatrix(int SZ, double *Ma, double *Mb, double *Mr){
+void initMatrix(int SZ, double *Ma, double *Mb, double *Mc){
 	int i, j;
 	for(i=0; i<SZ; ++i){
 		for(j=0;j<SZ;++j){
 			Ma[j+i*SZ] = 3.2*(i+j);
 			Mb[j+i*SZ] = 2.4*(j-i);
-			Mr[j+i*SZ] = 0.0;
+			Mc[j+i*SZ] = 0.0;
 		}
 	}
 		
@@ -95,7 +97,7 @@ void printMatrix(int SZ, double *M){
 	@param c: Total matrix of multiplication
     ---
 */
-void MM1c(int size, double *Ma, double *Mb, double *Mr){
+void MM1c(int size, double *Ma, double *Mb, double *Mc){
 	int i, j;
 	for(i=0; i<size; ++i){
 		for(j=0; j<size; ++j){
@@ -107,12 +109,12 @@ void MM1c(int size, double *Ma, double *Mb, double *Mr){
 			for(int k = 0; k < size; ++k, pA ++, pB+=size){
 				sumaAuxiliar += (*pA * *pB);
 			}
-			Mr[i*size+j] = sumaAuxiliar;
+			Mc[i*size+j] = sumaAuxiliar;
 		}
 	}
 }
 
-void MM1f(int size, double *Ma, double *Mb, double *Mr){
+void MM1f(int size, double *Ma, double *Mb, double *Mc){
   int i, j;
 	for(i=0; i<size; ++i){
 		for(j=0; j<size; ++j){
@@ -124,7 +126,7 @@ void MM1f(int size, double *Ma, double *Mb, double *Mr){
 			for(int k = 0; k < size; ++k, pA++, pB++){
 				sumaAuxiliar += (*pA * *pB);
 			}
-			Mr[i*size+j] = sumaAuxiliar;
+			Mc[i*size+j] = sumaAuxiliar;
 		}
 	}
 }
@@ -217,12 +219,66 @@ void *multMM(void *arg){
 
 void printMatrix_DoublePointers (double **M, int size){
 	int i, j; /*Indices*/
-	for (i = 0; i < size; ++i)	{
-		for (j = 0; j < size; ++j)	{
-			printf("	%lf", M[i][j]);
+		if(size< 5){
+		for (i = 0; i < size; ++i)	{
+			for (j = 0; j < size; ++j)	{
+				printf("	%lf", M[i][j]);
+			}
+			printf("\n");
 		}
-		printf("\n");
+		printf("-----------------------------\n");
 	}
-	printf("-----------------------------\n");
+}
 
+
+/*	@brief: Multiply matrices
+	@param size: Size of matrix
+	@param a: Matriz A to multiply
+	@param b: Matriz B to multiply
+	@param c: Total matrix of multiplication
+    ---
+*/
+void MM1cOMP(int hilos,int size, double *Ma, double *Mb, double *Mc){
+	omp_set_num_threads(hilos);
+#pragma omp parallel
+{ 
+	int i, j;
+#pragma omp for
+	for(i=0; i<size; ++i){
+		for(j=0; j<size; ++j){
+		/*Necesita puteros auxiliares*/
+		double *pA, *pB;
+		double sumaAuxiliar = 0.0;
+		pA = Ma + (i*size);
+		pB = Mb + j;
+			for(int k = 0; k < size; ++k, pA ++, pB+=size){
+				sumaAuxiliar += (*pA * *pB);
+			}
+			Mc[i*size+j] = sumaAuxiliar;
+		}
+	}
+}
+}
+
+
+void MM1fOMP(int hilos,int size, double *Ma, double *Mb, double *Mc){
+omp_set_num_threads(hilos);
+#pragma omp parallel
+{ 
+  int i, j;
+#pragma omp for
+	for(i=0; i<size; ++i){
+		for(j=0; j<size; ++j){
+		/*Necesita puteros auxiliares*/
+		double *pA, *pB;
+		double sumaAuxiliar = 0.0;
+		pA = Ma + (i*size);
+		pB = Mb + (j*size);
+			for(int k = 0; k < size; ++k, pA++, pB++){
+				sumaAuxiliar += (*pA * *pB);
+			}
+			Mc[i*size+j] = sumaAuxiliar;
+		}
+	}
+}
 }
